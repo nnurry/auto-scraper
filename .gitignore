@@ -2,3 +2,4 @@
 .vscode
 *.ps1
 *.zip
+env
