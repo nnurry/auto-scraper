@@ -1,9 +1,3 @@
-from selenium import webdriver
-from const import DRIVER_PATH, URL, HTML_PATH
-from selenium.webdriver.chrome.options import Options
-from selenium.webdriver.common.by import By
-
-
 def _path(name):
     return "./data/" + name
 

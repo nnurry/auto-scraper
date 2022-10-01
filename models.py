@@ -5,7 +5,7 @@ from selenium.webdriver.common.by import By
 from utils import write_file, outer, _path
 from autoscraper import AutoScraper
 import json
-
+from pathlib import Path
 class Selenium:
     def __init__(self, options=None, executable_path=None):
         if options is None:
@@ -37,7 +37,7 @@ class Scraper:
     def __init__(self):
         self.scraper = AutoScraper()
             
-    def ingest(self, html, data):
+    def ingest(self, data, html, url=''):
         for wanted_list in data:
             self.scraper.build(html=html, wanted_list=wanted_list)
     
@@ -47,41 +47,52 @@ class Scraper:
     
 class Execute:
     @staticmethod
+    def init_selenium(quit=True):
+        driver = Selenium()
+        driver.get_page()
+        driver.click_related_question()
+        driver.download_page()
+        if quit:
+            driver.quit()
+        return driver
+
+    @staticmethod
+    def get_file(filepath=HTML_PATH):
+        try:
+            file = Path(filepath).read_text(encoding='utf-8')
+        except FileNotFoundError:
+            Execute.init_selenium()
+            file = Path(filepath).read_text(encoding='utf-8')
+        return file
+
+    @staticmethod
     @outer
-    def get_related():
+    def get_related(filepath=HTML_PATH):
         scraper = Scraper()
-
-        related.pop('url')
-
+        related.update(dict(html=Execute.get_file(filepath)))
         scraper.ingest(**related)
-        return scraper.get_result(related["html"], _path("related"))
+        return scraper.get_result(related['html'], _path("related"))
 
     @staticmethod
     @outer   
-    def get_organic():
+    def get_organic(filepath=HTML_PATH):
         scraper = Scraper()
-
-        organic.pop('url')
-
+        organic.update(dict(html=Execute.get_file(filepath)))
         scraper.ingest(**organic)
-        return scraper.get_result(organic["html"], _path("organic"))
+        return scraper.get_result(organic['html'], _path("organic"))
         
     @staticmethod
     @outer
-    def get_ads():
+    def get_ads(filepath=HTML_PATH):
         scraper = Scraper()
-
-        ads.pop('url')
-
+        ads.update(dict(html=Execute.get_file(filepath)))
         scraper.ingest(**ads)
-        return scraper.get_result(ads["html"], _path("ads"))
+        return scraper.get_result(ads['html'], _path("ads"))
 
     @staticmethod
     @outer  
-    def get_local():
+    def get_local(filepath=HTML_PATH):
         scraper = Scraper()
-
-        local.pop('url')
-
+        local.update(dict(html=Execute.get_file(filepath)))
         scraper.ingest(**local)
-        return scraper.get_result(local["html"], _path("local"))
+        return scraper.get_result(local['html'], _path("local"))

@@ -1,12 +1,9 @@
-from pathlib import Path
 HTML_PATH = './content.html'
-HTML = Path(HTML_PATH).read_text('utf-8')
 URL = "https://www.google.com/search?q=top+10+electricians+in+area&near=california"
 DRIVER_PATH = './chromedriver.exe'
 
 organic = {
     "url": URL,
-    "html": HTML,
     "data": (
         (
             "The Best 10 Electricians in Chicago, Illinois - Yelp",
@@ -21,7 +18,6 @@ organic = {
 
 local = {
     "url": URL,
-    "html": HTML,
     # "see_more_url": "https://www.google.com/search?near=california&tbs=lf:1,lf_ui:14&tbm=lcl&q=top+10+electricians+in+area&rflfq=1&num=10&sa=X&ved=2ahUKEwjUj-Svn7z6AhWMet4KHareCaoQjGp6BAgQEAE",
     "data": (
         (
@@ -39,7 +35,6 @@ local = {
 
 ads = {
     "url": URL,
-    "html": HTML,
     "data": (
         (
             "5,0",
@@ -64,7 +59,6 @@ ads = {
 
 related = {
     "url": URL,
-    "html": HTML,
     "data": (
         (
             "What do most Electricians charge per hour?",
