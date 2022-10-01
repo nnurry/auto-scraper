@@ -1,6 +1,6 @@
-HTML_PATH = './content.html'
+HTML_PATH = "./content.html"
 URL = "https://www.google.com/search?q=top+10+electricians+in+area&near=california"
-DRIVER_PATH = './chromedriver.exe'
+DRIVER_PATH = "./chromedriver.exe"
 
 organic = {
     "url": URL,
@@ -48,12 +48,7 @@ ads = {
             "Open 24 hours",
             "20+ years in business · Fresno, CA, United States · +1 559-960-1922",
         ),
-        (
-            "4,6",
-            "(34)",
-            "Open 24 hours",
-            "5+ years in business · +1 559-318-5900"
-        ),
+        ("4,6", "(34)", "Open 24 hours", "5+ years in business · +1 559-318-5900"),
     ),
 }
 

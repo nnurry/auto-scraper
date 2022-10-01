@@ -1,8 +1,5 @@
 from os import system
 from models import Execute
-from sys import argv
-from const import HTML_PATH
-
 
 def get_data():
     Execute.get_organic()
