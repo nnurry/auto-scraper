@@ -12,5 +12,5 @@ def get_data():
 
 if __name__ == '__main__':
     system('cls')
-    get_data(HTML_PATH if len(argv) == 1 else argv[1])
+    get_data()
     print("End of __main__")
