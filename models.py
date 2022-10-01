@@ -6,14 +6,14 @@ from utils import write_file, outer, _path
 from autoscraper import AutoScraper
 import json
 from pathlib import Path
+import time
 
 
 class Selenium:
     def __init__(self, options=None, executable_path=None):
         if options is None:
             options = Options()
-            options.headless = True
-            options.add_argument("--window-size=1920,1080")
+            # options.headless = True
         if executable_path is None:
             executable_path = DRIVER_PATH
         self.driver = webdriver.Chrome(options=options, executable_path=executable_path)
@@ -25,9 +25,20 @@ class Selenium:
         return self.driver
 
     def click_related_question(self, xpath="//div[@jsname = 'Cpkphb']"):
-        elements = self.driver.find_elements(By.XPATH, xpath)
-        [element.click() for element in elements]
+        tries = 2
+        def mass_click():
+            elements = self.driver.find_elements(By.XPATH, xpath)
+            for element in elements:
+                element.click()
+                time.sleep(0.25)
+        for i in range(0, tries):
+            mass_click()
+        time.sleep(1)
         return self.driver
+
+    def save_screenshot(self, filepath="./screenshot.png"):
+        self.driver.save_screenshot(filepath)
+        return True
 
     def download_page(self):
         return write_file(self.driver.page_source, HTML_PATH)
