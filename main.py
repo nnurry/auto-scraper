@@ -1,7 +1,13 @@
-from scraper import get_data
 from os import system
-from utils import Selenium
+from models import Selenium, Execute
 from sys import argv
+
+def get_data():
+    Execute.get_organic()
+    Execute.get_local()
+    Execute.get_ads()
+    Execute.get_related()
+
 def init_selenium(quit=True):
     driver = Selenium()
     driver.get_page()
