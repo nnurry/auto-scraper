@@ -69,15 +69,17 @@ class Execute:
     @outer
     def get_related(filepath=HTML_PATH):
         scraper = Scraper()
-        related.update(dict(html=Execute.get_file(filepath)))
+        html = Execute.get_file(filepath)
+        related.update(dict(html=html))
         scraper.ingest(**related)
         return scraper.get_result(related['html'], _path("related"))
 
     @staticmethod
-    @outer   
+    @outer
     def get_organic(filepath=HTML_PATH):
         scraper = Scraper()
-        organic.update(dict(html=Execute.get_file(filepath)))
+        html = Execute.get_file(filepath)
+        organic.update(dict(html=html))
         scraper.ingest(**organic)
         return scraper.get_result(organic['html'], _path("organic"))
         
@@ -85,7 +87,8 @@ class Execute:
     @outer
     def get_ads(filepath=HTML_PATH):
         scraper = Scraper()
-        ads.update(dict(html=Execute.get_file(filepath)))
+        html = Execute.get_file(filepath)
+        ads.update(dict(html=html))
         scraper.ingest(**ads)
         return scraper.get_result(ads['html'], _path("ads"))
 
@@ -93,6 +96,7 @@ class Execute:
     @outer  
     def get_local(filepath=HTML_PATH):
         scraper = Scraper()
-        local.update(dict(html=Execute.get_file(filepath)))
+        html = Execute.get_file(filepath)
+        local.update(dict(html=html))
         scraper.ingest(**local)
         return scraper.get_result(local['html'], _path("local"))
