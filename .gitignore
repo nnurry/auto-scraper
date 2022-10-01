@@ -3,4 +3,4 @@
 *.ps1
 *.zip
 env
-*.json
+data
