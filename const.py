@@ -7,7 +7,7 @@ organic = {
     "data": (
         (
             "The Best 10 Electricians in Chicago, Illinois - Yelp",
-            "https://www.yelp.com/search?cflt=electricians&amp;find_loc=Chicago%2C+IL",
+            "https://www.yelp.com/search?cflt=electricians&find_loc=Chicago%2C+IL",
         ),
         (
             "Top 10 Electricians in USA - Virtuous Reviews",
@@ -57,14 +57,14 @@ related = {
     "data": (
         (
             "What do most Electricians charge per hour?",
-            # "How Much Does It Cost To Hire An Electrician? - Forbes",
+            "How Much Does It Cost To Hire An Electrician? - Forbes",
             # "between $50 and $100 per hour",
             # "According to HomeAdvisor, the average electrician hourly rate is",
             # "https://www.forbes.com/home-improvement/electrical/cost-to-hire-electrician/",
         ),
         (
             "Who is the most successful electrician?",
-            # "10 Famous People You Never Knew Worked As Electricians",
+            "10 Famous People You Never Knew Worked As Electricians",
             # "Benjamin Franklin",
             # "Known by many as the First American, a founding father and present on the $100 bill Benjamin Franklin was also possibly one of the first electricians in history. He was an inventor and experimenter who really helped the world understand what electricity was and how it worked.",
             # "https://www.tradeskills4u.co.uk/posts/famous-electricians",

@@ -24,8 +24,8 @@ class Selenium:
         self.driver.get(url)
         return self.driver
 
-    def click_related_question(self):
-        elements = self.driver.find_elements(By.ID, "lSI4Y4W7Mv_V2roPq--D2AE__3")
+    def click_related_question(self, xpath="div[@jsname = 'Cpkphb']"):
+        elements = self.driver.find_elements(By.XPATH, xpath)
         [element.click() for element in elements]
         return self.driver
 
@@ -62,12 +62,7 @@ class Execute:
 
     @staticmethod
     def get_file(filepath=HTML_PATH):
-        try:
-            file = Path(filepath).read_text(encoding="utf-8")
-        except FileNotFoundError:
-            Execute.init_selenium()
-            file = Path(filepath).read_text(encoding="utf-8")
-        return file
+        return Path(filepath).read_text(encoding="utf-8")
 
     @staticmethod
     @outer
