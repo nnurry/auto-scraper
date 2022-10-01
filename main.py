@@ -4,7 +4,7 @@ from sys import argv
 from const import HTML_PATH
 
 
-def get_data(path):
+def get_data():
     Execute.get_organic()
     Execute.get_local()
     Execute.get_ads()
