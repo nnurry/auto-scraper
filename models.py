@@ -24,7 +24,7 @@ class Selenium:
         self.driver.get(url)
         return self.driver
 
-    def click_related_question(self, xpath="div[@jsname = 'Cpkphb']"):
+    def click_related_question(self, xpath="//div[@jsname = 'Cpkphb']"):
         elements = self.driver.find_elements(By.XPATH, xpath)
         [element.click() for element in elements]
         return self.driver
