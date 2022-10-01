@@ -1,7 +1,8 @@
 from pathlib import Path
-
-HTML = Path('./url-content.html').read_text('utf-8')
+HTML_PATH = './content.html'
+HTML = Path(HTML_PATH).read_text('utf-8')
 URL = "https://www.google.com/search?q=top+10+electricians+in+area&near=california"
+DRIVER_PATH = './chromedriver.exe'
 
 organic = {
     "url": URL,

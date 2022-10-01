@@ -1,12 +1,20 @@
-from scraper import get_data_by_html, get_data_by_url
-from sys import argv
+from scraper import get_data
 from os import system
+from utils import Selenium
+from sys import argv
+def init_selenium(quit=True):
+    driver = Selenium()
+    driver.get_page()
+    driver.click_related_question()
+    driver.download_page()
+    if quit:
+        driver.quit()
+    return driver
 
-if len(argv) > 1:
+if __name__ == '__main__':
     system('cls')
-    if argv[1] == 'html':
-        get_data_by_html()
-    elif argv[1] == 'url':
-        get_data_by_url()
-    else:
-        raise Exception('wrong parameter')
+    if len(argv) > 1:
+        if argv[1] == 'fetch':
+            init_selenium()
+    get_data()
+    print("End of __main__")

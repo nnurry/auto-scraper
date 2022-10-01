@@ -3,5 +3,5 @@
 *.ps1
 *.zip
 env
-data
-*.html
+data/*.json
+__pycache__
