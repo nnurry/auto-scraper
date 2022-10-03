@@ -1,9 +1,10 @@
-from json import dumps
+from json import dumps, load
 from os import system
 from bs4 import BeautifulSoup, Tag
 from models import init_selenium
 from utils import write_file
 from sys import argv
+import yake
 
 NUM_OF_PAGES = 10
 
@@ -139,7 +140,7 @@ def step_1():
     """DRIVER CODE STEP 1"""
     # init
     params = dict(file="./html/page-1.html", mode="r", encoding="utf-8")
-    # init_selenium(destination=params['file'])
+    init_selenium(destination=params['file'])
     soup = read_and_make_soup(params)
     # execute
     content_div = extract_content(soup)
@@ -181,7 +182,7 @@ def step_2():
         # init
         filepath = f'./html/page-{i + 1}.html'
         params = dict(file=filepath, mode="r", encoding="utf-8")
-        # init_selenium(page=i + 1, destination=filepath)
+        init_selenium(page=i + 1, destination=filepath)
         soup = read_and_make_soup(params)
 
         h1s = soup.find_all('h1')
@@ -204,7 +205,33 @@ def step_2():
 
 
 def step_3():
-    print('step 3')
+    """
+    h1, h2 full of default keyword -> analyze h3, p
+    h3 gives generic and badly categorized keywords -> ignore h3 also
+    """
+    def get_field(data, key, field):
+        return ' . '.join(data[key][field])
+
+    kw_extractor = yake.KeywordExtractor(top=10, stopwords=None)
+    with open('./data/step-2.json', 'r', encoding='utf-8') as fp:
+        step_2_data = load(fp)
+
+    h3s = []
+    ps = []
+    for key in step_2_data:
+        h3s.append(get_field(step_2_data, key, 'h3'))
+        ps.append(get_field(step_2_data, key, 'p'))
+    h3s = ' . '.join(h3s)
+    ps = ' . '.join(ps)
+
+    keywords = kw_extractor.extract_keywords(ps)
+    write_file(
+        dumps([{'rank': i + 1, 'keyword': packaged[0], 'score': packaged[1]}
+               for i, (packaged) in enumerate(keywords[::-1])]),
+        './data/step-3.json',
+        'w',
+        'utf-8'
+    )
 
 
 def step_4():

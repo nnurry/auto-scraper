@@ -11,6 +11,9 @@ class Selenium:
         if options is None:
             options = Options()
             options.headless = True
+            options.add_experimental_option(
+                'prefs', {'intl.accept_languages': 'en-GB'})
+
         if executable_path is None:
             executable_path = DRIVER_PATH
         self.driver = webdriver.Chrome(
