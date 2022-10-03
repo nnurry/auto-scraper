@@ -18,19 +18,21 @@ class Selenium:
             executable_path = DRIVER_PATH
         self.driver = webdriver.Chrome(options=options, executable_path=executable_path)
 
-    def get_page(self, url=None):
+    def get_page(self, url=None, page=1):
         if not url:
             url = URL
-        self.driver.get(url)
+        self.driver.get(url + f'&start={(page - 1) * 10}')
         return self.driver
 
     def click_related_question(self, xpath="//div[@jsname = 'Cpkphb']"):
-        tries = 2
+        tries = 1
+
         def mass_click():
             elements = self.driver.find_elements(By.XPATH, xpath)
             for element in elements:
                 element.click()
                 time.sleep(0.25)
+
         for i in range(0, tries):
             mass_click()
         time.sleep(1)
@@ -40,8 +42,8 @@ class Selenium:
         self.driver.save_screenshot(filepath)
         return True
 
-    def download_page(self):
-        return write_file(self.driver.page_source, HTML_PATH)
+    def download_page(self, destination=HTML_PATH):
+        return write_file(self.driver.page_source, destination, "w", "utf-8")
 
     def quit(self):
         self.driver.quit()
@@ -57,16 +59,16 @@ class Scraper:
 
     def get_result(self, html, filename, format=".json"):
         result = self.scraper.get_result_similar(html=html, grouped=True)
-        return write_file(json.dumps(result), filename + format)
+        return write_file(json.dumps(result), filename + format, "w", "utf-8")
 
 
 class Execute:
     @staticmethod
-    def init_selenium(quit=True):
+    def init_selenium(quit=True, page=1, destination=''):
         driver = Selenium()
-        driver.get_page()
+        driver.get_page(URL, page)
         driver.click_related_question()
-        driver.download_page()
+        driver.download_page(destination)
         if quit:
             driver.quit()
         return driver

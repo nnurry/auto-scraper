@@ -11,7 +11,10 @@ def outer(func):
     return inner
 
 
-def write_file(content, filepath, mode="w", encoding="utf-8"):
-    with open(filepath, mode, encoding=encoding) as f:
+def write_file(content, filepath, mode="w", encoding=""):
+    params = dict(file=filepath, mode=mode)
+    if encoding:
+        params.update(dict(encoding=encoding))
+    with open(**params) as f:
         f.write(content)
     return content
