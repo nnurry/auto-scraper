@@ -1,14 +1,18 @@
 from json import dumps
 from os import system
-from bs4 import BeautifulSoup, PageElement, Tag
-from models import Execute
+from bs4 import BeautifulSoup, Tag
+from models import init_selenium
 from utils import write_file
+from sys import argv
 
-def read_and_make_soup(params):
+NUM_OF_PAGES = 10
 
+
+def read_and_make_soup(params: dict):
     with open(**params) as fp:
         soup = BeautifulSoup(fp)
     return soup
+
 
 def get_content(main_div: Tag):
     main_res = main_div.find(class_='GyAeWb')
@@ -37,7 +41,9 @@ def trim(string: str, get_text=True):
     if string:
         if get_text:
             string = string.text
-        return ' '.join(filter(lambda x: x != '', string.strip().replace('\n', '').split(' ')))
+        string = ' '.join(
+            filter(lambda x: x != '', string.strip().replace('\n', '').split(' ')))
+        return string
     return ''
 
 
@@ -82,14 +88,13 @@ def extract_organic(organic_body: Tag):
 
 
 def extract_local(local_body: Tag):
-    """
-    """
-    
+
     def filter_website(url):
         return True if ("http" in url or "https" in url) and ("google" not in url) else False
-    
+
     local_websites = list(
         map(lambda url: url['href'], local_body.find_all('a', href=True)))
+
     local_websites = list(filter(filter_website, local_websites))
 
     local_ads = local_body.find_all('div', class_='rllt__details')
@@ -99,7 +104,7 @@ def extract_local(local_body: Tag):
         for local_ in local_ad.contents:
             local_ = deep_split(trim(local_))
             local_data = [*local_data, *local_]
-
+        service_area = local_data.pop(4) if len(local_data) > 7 else None
         local_dict = {
             'title': local_data[0],
             'rating': local_data[1][:3],
@@ -108,59 +113,112 @@ def extract_local(local_body: Tag):
             'years_in_business': local_data[3],
             'phone': local_data[4],
             'hours': local_data[5],
-            'service_type': local_data[6]
+            'service_type': local_data[6],
+            'service_area': service_area
         }
         local_dicts.append(local_dict)
 
     local_ads = list(
         map(lambda x: x['data-cid'], local_body.find_all('a', attrs={'data-cid': True})))
+
+    more_location_link = local_body.find('g-more-link')
+    more_location_link = more_location_link.find('a', href=True)['href']
     for i, local_dict in enumerate(local_dicts):
         local_dicts[i] = {'position': i + 1,
-                          'place_id': local_ads[i], 
-                          'more_info': local_websites[i],
+                          'place_id': local_ads[i],
+                          'website': local_websites[i],
                           **local_dict}
+    local_dicts = {'more_location_link': more_location_link,
+                   'places': local_dicts}
+
     # TODO: MISSING badge, service_area
     return local_dicts
 
-def run():
-    system("cls")
-    # Execute.init_selenium()
-    """STEP 1"""
-    params = dict(file="./content.html", mode="r", encoding="utf-8")
-    # soup = read_and_make_soup(params)
-    # content_div = extract_content(soup)
-    # if not content_div:
-    #     raise Exception('Invalid HTML')
 
-    # organic_body, local_body = extract_segment(content_div)
-    # organic_results, related_results = extract_organic(organic_body)
-    # local_dicts = extract_local(local_body)
-    # print(local_dicts)
-    # write_file(dumps(organic_results), './data/organic.json', 'w')
-    # write_file(dumps(related_results), './data/related.json', 'w')
-    # write_file(dumps(local_dicts), './data/local-data.json', 'w')
-    # extract_local(local_body)
-    """STEP 2"""
-    for i in range(0, 4):
-        filepath = f'./data-step-2/content-page-{i + 1}.html'
-        # Execute.init_selenium(True, i + 1, filepath)
-        params['file'] = filepath
+def step_1():
+    """DRIVER CODE STEP 1"""
+    # init
+    params = dict(file="./html/page-1.html", mode="r", encoding="utf-8")
+    # init_selenium(destination=params['file'])
+    soup = read_and_make_soup(params)
+    # execute
+    content_div = extract_content(soup)
+    if not content_div:
+        raise Exception('Invalid HTML')
+
+    organic_body, local_body = extract_segment(content_div)
+    organic_results, related_results = extract_organic(organic_body)
+    local_dicts = extract_local(local_body)
+    local_results = {
+        'more_location_link': local_dicts['more_location_link'], 'places': []}
+    local_ads = []
+    for local_dict in local_dicts['places']:
+        local_results['places'].append({
+            'title': local_dict['title'],
+            'website': local_dict['website'],
+            'place_id': local_dict['place_id']
+        })
+        local_ads.append({
+            'link': local_dict['website'],
+            'rating': float(local_dict['rating'].replace(',', '.')),
+            'rating_count': int(local_dict['rating_count']),
+            'badge': None,
+            'service_area': local_dict['service_area'],
+            'hours': local_dict['hours'],
+            'years_in_business': local_dict['years_in_business'],
+            'phone': local_dict['phone'].replace('-', '').replace(' ', '')
+        })
+    write_file(dumps(local_results), './data/local.json', 'w')
+    write_file(dumps(organic_results), './data/organic.json', 'w')
+    write_file(dumps(related_results), './data/related.json', 'w')
+    write_file(dumps(local_ads), './data/ads.json', 'w')
+
+
+def step_2():
+    """DRIVER CODE STEP 2"""
+    step_2_data = dict()
+    for i in range(0, NUM_OF_PAGES):
+        # init
+        filepath = f'./html/page-{i + 1}.html'
+        params = dict(file=filepath, mode="r", encoding="utf-8")
+        # init_selenium(page=i + 1, destination=filepath)
         soup = read_and_make_soup(params)
-        # get h1-h2-h3-h4-p
+
         h1s = soup.find_all('h1')
         h2s = soup.find_all('h2')
         h3s = soup.find_all('h3')
         h4s = soup.find_all('h4')
         ps = soup.find_all('p')
-        
+
         h1s = [trim(h1) for h1 in h1s]
         h2s = [trim(h2) for h2 in h2s]
         h3s = [trim(h3) for h3 in h3s]
         h4s = [trim(h4) for h4 in h4s]
-        ps = [trim(p) for p in ps]
-        
-        step_2_data = dict(h1=h1s, h2=h2s, h3=h3s, h4=h4s, p=ps)
+        ps = [trim(p.span) for p in ps]
 
-        # write_file(dumps(step_2_data), './data/step-2.json', 'w')
+        data = dict(h1=h1s, h2=h2s, h3=h3s, h4=h4s, p=ps)
+
+        step_2_data[f'page {i + 1}'] = data
+
+    write_file(dumps(step_2_data), './data/step-2.json', 'w')
+
+
+def step_3():
+    print('step 3')
+
+
+def step_4():
+    print('step 4')
+
+
 if __name__ == "__main__":
-    run()
+    system("cls")
+    fns = [step_1, step_2, step_3, step_4]
+    if len(argv) > 1:
+        index = int(argv[1])
+        if index > 4 or index < 1:
+            raise Exception('Wrong parameter (must be int from 1 -> 4)')
+        fns[int(argv[1]) - 1]()
+
+    else:
+        raise Exception('Lack parameter')

@@ -1,11 +1,8 @@
 from selenium import webdriver
-from const import DRIVER_PATH, URL, HTML_PATH, organic, local, ads, related
+from const import DRIVER_PATH, URL, HTML_PATH
 from selenium.webdriver.chrome.options import Options
 from selenium.webdriver.common.by import By
-from utils import write_file, outer, _path
-from autoscraper import AutoScraper
-import json
-from pathlib import Path
+from utils import write_file
 import time
 
 
@@ -13,10 +10,11 @@ class Selenium:
     def __init__(self, options=None, executable_path=None):
         if options is None:
             options = Options()
-            # options.headless = True
+            options.headless = True
         if executable_path is None:
             executable_path = DRIVER_PATH
-        self.driver = webdriver.Chrome(options=options, executable_path=executable_path)
+        self.driver = webdriver.Chrome(
+            options=options, executable_path=executable_path)
 
     def get_page(self, url=None, page=1):
         if not url:
@@ -35,6 +33,7 @@ class Selenium:
 
         for i in range(0, tries):
             mass_click()
+
         time.sleep(1)
         return self.driver
 
@@ -49,66 +48,11 @@ class Selenium:
         self.driver.quit()
 
 
-class Scraper:
-    def __init__(self):
-        self.scraper = AutoScraper()
-
-    def ingest(self, data, html, url=""):
-        for wanted_list in data:
-            self.scraper.build(html=html, wanted_list=wanted_list)
-
-    def get_result(self, html, filename, format=".json"):
-        result = self.scraper.get_result_similar(html=html, grouped=True)
-        return write_file(json.dumps(result), filename + format, "w", "utf-8")
-
-
-class Execute:
-    @staticmethod
-    def init_selenium(quit=True, page=1, destination=''):
-        driver = Selenium()
-        driver.get_page(URL, page)
-        driver.click_related_question()
-        driver.download_page(destination)
-        if quit:
-            driver.quit()
-        return driver
-
-    @staticmethod
-    def get_file(filepath=HTML_PATH):
-        return Path(filepath).read_text(encoding="utf-8")
-
-    @staticmethod
-    @outer
-    def get_related(filepath=HTML_PATH):
-        scraper = Scraper()
-        html = Execute.get_file(filepath)
-        related.update(dict(html=html))
-        scraper.ingest(**related)
-        return scraper.get_result(related["html"], _path("related"))
-
-    @staticmethod
-    @outer
-    def get_organic(filepath=HTML_PATH):
-        scraper = Scraper()
-        html = Execute.get_file(filepath)
-        organic.update(dict(html=html))
-        scraper.ingest(**organic)
-        return scraper.get_result(organic["html"], _path("organic"))
-
-    @staticmethod
-    @outer
-    def get_ads(filepath=HTML_PATH):
-        scraper = Scraper()
-        html = Execute.get_file(filepath)
-        ads.update(dict(html=html))
-        scraper.ingest(**ads)
-        return scraper.get_result(ads["html"], _path("ads"))
-
-    @staticmethod
-    @outer
-    def get_local(filepath=HTML_PATH):
-        scraper = Scraper()
-        html = Execute.get_file(filepath)
-        local.update(dict(html=html))
-        scraper.ingest(**local)
-        return scraper.get_result(local["html"], _path("local"))
+def init_selenium(quit=True, page=1, destination=''):
+    driver = Selenium()
+    driver.get_page(URL, page)
+    driver.click_related_question()
+    driver.download_page(destination)
+    if quit:
+        driver.quit()
+    return driver
