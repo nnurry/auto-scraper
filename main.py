@@ -158,11 +158,12 @@ def extract_local(local_body: Tag):
     return local_dicts
 
 
-def step_1():
+def step_1(run_selenium):
     """DRIVER CODE STEP 1"""
     # init
     params = dict(file="./html/page-1.html", mode="r", encoding="utf-8")
-    # init_selenium(destination=params['file'])
+    if run_selenium:
+        init_selenium(destination=params['file'])
     soup = read_and_make_soup(params)
     # execute
     content_div = extract_content(soup)
@@ -197,14 +198,15 @@ def step_1():
     write_file(dumps(related_results), './data/questions.json', 'w')
 
 
-def step_2():
+def step_2(run_selenium):
     """DRIVER CODE STEP 2"""
     step_2_data = dict()
     for i in range(0, NUM_OF_PAGES):
         # init
         filepath = f'./html/page-{i + 1}.html'
         params = dict(file=filepath, mode="r", encoding="utf-8")
-        # init_selenium(page=i + 1, destination=filepath)
+        if run_selenium:
+            init_selenium(page=i + 1, destination=filepath)
         soup = read_and_make_soup(params)
 
         h1s = soup.find_all('h1')
@@ -234,7 +236,7 @@ def step_3():
     def get_field(data, key, field):
         return ' . '.join(data[key][field])
 
-    kw_extractor = yake.KeywordExtractor(top=10, stopwords=None)
+    kw_extractor = yake.KeywordExtractor(top=3, stopwords=None)
     with open('./data/header.json', 'r', encoding='utf-8') as fp:
         step_2_data = load(fp)
 
@@ -257,19 +259,33 @@ def step_3():
 
 
 def step_4():
-    # aggregate('./data')
-    supabase = Supabase()
-    user = supabase.sign_in('kori@gmail.com', '123456')
-    print(user)
+    aggregate('./data')
 
-if __name__ == "__main__":
-    # system("cls")
+def run():
+    system("cls")
     fns = [step_1, step_2, step_3, step_4]
     if len(argv) > 1:
         index = int(argv[1])
         if index > 4 or index < 1:
             raise Exception('Wrong parameter (must be int from 1 -> 4)')
-        fns[int(argv[1]) - 1]()
+        if index == 1 or index == 2:
+            if len(argv) < 3:
+                raise Exception('Not enough parameters ("true" or "false" required)')
+
+            param = argv[2].lower()
+            if param == 'true':
+                param = True
+            elif param == 'false':
+                param = False
+            else:
+                raise Exception('Invalid parameter ("true" or "false" required)')
+
+            fns[int(argv[1]) - 1](param)
+        else:
+            fns[int(argv[1]) - 1]()
 
     else:
-        raise Exception('Lack parameter')
+        raise Exception('Not enough parameters')    
+
+if __name__ == "__main__":
+    run()

@@ -5,13 +5,13 @@ from selenium.webdriver.common.by import By
 from utils import write_file
 import time
 import os
-from supabase import create_client, Client
+from supabase import create_client
 from dotenv import load_dotenv
 
 load_dotenv()
 
-URL = os.environ.get("SUPABASE_URL")
-KEY = os.environ.get("SUPABASE_KEY")
+SUPABASE_URL = os.environ.get("SUPABASE_URL")
+SUPABASE_KEY = os.environ.get("SUPABASE_KEY")
 class Selenium:
     def __init__(self, options=None, executable_path=None):
         if options is None:
@@ -58,7 +58,7 @@ class Selenium:
 
 class Supabase:
     def __init__(self):
-        self.client = create_client(URL, KEY)
+        self.client = create_client(SUPABASE_URL, SUPABASE_KEY)
         
     def sign_up(self, email: str, password: str):
         return self.client.auth.sign_up(email=email, password=password)
@@ -66,8 +66,18 @@ class Supabase:
     def sign_in(self, email: str, password: str):
         return self.client.auth.sign_in(email=email, password=password)
     
-    def sign_out(self, email: str, password: str):
-        return self.client.auth.sign_out(email=email, password=password)
+    def sign_out(self):
+        return self.client.auth.sign_out()
+        
+    def insert(self, table, key_value, upsert=False):
+        params = dict(json=key_value, upsert=upsert)
+        response =  self.client.table(table).insert(**params).execute()
+        return response.data
+    
+    def select(self, table: str, columns: list):
+        columns = '*' if not len(columns) else ','.join(columns)
+        response =  self.client.table(table).select(columns).execute()
+        return response.data
 
 
 def init_selenium(quit=True, page=1, destination=''):
