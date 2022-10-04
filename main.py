@@ -40,14 +40,15 @@ def step_1(url, run_selenium: bool):
             'more_location_link': local_dicts['more_location_link'], 
             'places': []
         }
+
         for local_dict in local_dicts['places']:
-            local_results['places'].append({
+
+            local_result = {
                 'title': local_dict['title'],
-                'website': local_dict['website'],
                 'place_id': local_dict['place_id']
-            })
-            local_ads.append({
-                'link': local_dict['website'],
+            }
+            
+            local_ad = {
                 'rating': float(local_dict['rating'].replace(',', '.')),
                 'rating_count': int(local_dict['rating_count']),
                 'badge': None,
@@ -55,7 +56,14 @@ def step_1(url, run_selenium: bool):
                 'hours': local_dict['hours'],
                 'years_in_business': local_dict['years_in_business'],
                 'phone': local_dict['phone'].replace('-', '').replace(' ', '')
-            })
+            }
+
+            if local_dict.get('website'): # empty string or non-existent at all -> False -> dont't add website
+                local_result['website'] = local_dict['website']
+                local_ad['link'] = local_dict['website']
+
+            local_results['places'].append(local_result)
+            local_ads.append(local_ad)
 
     write_file(dumps(organic_results), './data/organic_links.json', 'w')
     write_file(dumps(local_results), './data/local_results.json', 'w')
@@ -165,5 +173,4 @@ def run():
         raise Exception('Not enough parameters')
     
 if __name__ == "__main__":
-    # run()
-    step_1('https://www.google.com/search?q=top+10+electricians+in+area&near=oregon', True)
+    run()
