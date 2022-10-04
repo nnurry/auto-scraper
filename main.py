@@ -133,12 +133,27 @@ def step_4():
     aggregate('./data')
 
 def run():
-    # system("cls")
-    fns = [step_1, step_2, step_3, step_4]
+    system("cls")
+    fns = [
+        step_1, 
+        step_2, 
+        step_3, 
+        step_4
+    ]
+    
+    cmts = [
+        "Extract organic urls, local data and related questions into .json files",
+        "Extracting h1, h2, h3, h4 and p in search pages",
+        "Extract n-grams keywords into .json with descending ranking",
+        "Aggregate and pipeline extracted data"
+    ]
+
     if len(argv) > 1:
         index = int(argv[1])
         if index > 4 or index < 1:
             raise Exception('Wrong parameter (must be int from 1 -> 4)')
+        print('Executing step {}: {}\n\n'.format(index, cmts[index - 1]))
+
         if index == 1 or index == 2:
             if len(argv) < 3:
                 raise Exception('Not enough parameters ("true" or "false" required)')
@@ -165,9 +180,11 @@ def run():
             else:
                 url = URL
 
-            fns[int(argv[1]) - 1](url, param)
+            fns[index - 1](url, param)
         else:
-            fns[int(argv[1]) - 1]()
+            fns[index - 1]()
+
+        print("Finished execution\n")
 
     else:
         raise Exception('Not enough parameters')
