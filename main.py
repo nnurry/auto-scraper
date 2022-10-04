@@ -248,7 +248,7 @@ def step_3():
     h3s = ' . '.join(h3s)
     ps = ' . '.join(ps)
 
-    keywords = kw_extractor.extract_keywords(ps)
+    keywords = kw_extractor.extract_keywords(' . '.join([h3s, ps]))
     write_file(
         dumps([{'rank': i + 1, 'keyword': packaged[0], 'score': packaged[1]}
                for i, (packaged) in enumerate(keywords[::-1])]),
