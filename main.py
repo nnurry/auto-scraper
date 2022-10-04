@@ -11,9 +11,7 @@ NUM_OF_PAGES = 3
 
 url = URL
 
-print("URL = {}".format(url))
-
-def aggregate(directory_path, destination='./data/aggregated.json'):
+def aggregate(directory_path: str, destination: str ='./data/aggregated.json'):
     PARAMS = dict(mode='r', encoding='utf-8')
     child_files = [
         'organic_links', 
@@ -64,7 +62,7 @@ def extract_segment(content: Tag):
     return organic_body, local_body
 
 
-def trim(string: str, get_text=True):
+def trim(string: str, get_text: bool =True):
     if string:
         if get_text:
             string = string.text
@@ -116,7 +114,7 @@ def extract_organic(organic_body: Tag):
 
 def extract_local(local_body: Tag):
 
-    def filter_website(url):
+    def filter_website(url: str):
         return True if ("http" in url or "https" in url) and ("google" not in url) else False
 
     local_websites = list(
@@ -163,7 +161,7 @@ def extract_local(local_body: Tag):
     return local_dicts
 
 
-def step_1(run_selenium):
+def step_1(url, run_selenium: bool):
     """DRIVER CODE STEP 1"""
     # init
     params = dict(file="./html/page-1.html", mode="r", encoding="utf-8")
@@ -209,7 +207,7 @@ def step_1(run_selenium):
     write_file(dumps(related_results), './data/questions.json', 'w')
 
 
-def step_2(run_selenium):
+def step_2(url, run_selenium: bool):
     """DRIVER CODE STEP 2"""
     step_2_data = dict()
     for i in range(0, NUM_OF_PAGES):
@@ -284,49 +282,28 @@ def run():
                 raise Exception('Not enough parameters ("true" or "false" required)')
 
             param = argv[2].lower()
-            if param == 'true':
+            if param in ['true', 'yes', 'y', 't']:
                 param = True
-            elif param == 'false':
+            elif param == ['false', 'no', 'n', 'f']:
                 param = False
             else:
                 raise Exception('Invalid parameter ("true" or "false" required)')
 
-            fns[int(argv[1]) - 1](param)
+            question = input('What is your query? ')
+            if not question:
+                raise Exception('Please don\'t leave the query empty, try again')
+            area = input('Choose the area: ')
+            if not area:
+                raise Exception('Please don\'t leave the location empty, try again')
+
+            url = URL if (not question or not area) else generate_url(question, area)
+            print("- - - Scraping {} - - -".format(url))
+            fns[int(argv[1]) - 1](url, param)
         else:
             fns[int(argv[1]) - 1]()
 
     else:
-        raise Exception('Not enough parameters')    
-
-def run_alternative():
-    """
-        If you want to query, please change parameters below
-    """
-    # system("cls")
-    step = int(input('Select step (1 | 2 | 3 | 4): '))
-    if step > 4 or step < 1:
-        raise Exception('Step must be int from 1 to 4')
-    question = input('What is your query? ')
-    if not question:
-        raise Exception('Please don\'t leave the query empty, try again')
-    area = input('Choose the area: ')
-    if not area:
-        raise Exception('Please don\'t leave the location empty, try again')
-    url = URL if (not question or not area) else generate_url(question, area)
-    print("URL = {}".format(url))
-    fns = [step_1, step_2, step_3, step_4]
-    if step == 1 or step == 2:
-        scrape = input('Do you want to scrape the web? ')
-        param = scrape.lower()
-        if param in ['true', 'yes', 'y', 't']:
-            param = True
-        elif param == ['false', 'no', 'n', 'f']:
-            param = False
-        else:
-            raise Exception('Invalid parameter ("true" or "false" required)')
-        fns[step - 1](param)
-    else:
-        fns[step - 1]()
+        raise Exception('Not enough parameters')
     
 if __name__ == "__main__":
     run()
