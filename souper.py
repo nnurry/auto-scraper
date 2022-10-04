@@ -1,6 +1,6 @@
 from json import dumps, load
 from bs4 import BeautifulSoup, Tag
-from utils import write_file
+from utils import write_file, format_, deep_split
 
 def read_and_make_soup(params: dict):
     with open(**params) as fp:
@@ -52,23 +52,6 @@ def extract_segment(content: Tag):
     organic_body = content.find('div', class_='s6JM6d')
     local_body = content.find('div', class_='M8OgIe')
     return organic_body, local_body
-
-def format_(string: str, get_text: bool =True):
-    if string:
-        if get_text:
-            string = string.text
-        string = ' '.join(
-            filter(lambda x: x != '', string.strip().replace('\n', '').split(' ')))
-        return string
-    return ''
-
-def deep_split(string: str):
-    if string.find('·'):
-        first = list(filter(lambda x: x != '', string.split("·")))
-        later = list(map(lambda x: x.strip(), first))
-        return later
-    else:
-        return [string]
 
 def extract_organic(organic_body: Tag):
     organic = organic_body.find('div', id='search')
