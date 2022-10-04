@@ -18,3 +18,8 @@ def write_file(content, filepath, mode="w", encoding=""):
     with open(**params) as f:
         f.write(content)
     return content
+
+def generate_url(question: str, area: str):
+    def format(string: str):
+        return string.lower().strip().replace(" ", "+")
+    return 'https://www.google.com/search?' + f'q={format(question)}&near={format(area)}'

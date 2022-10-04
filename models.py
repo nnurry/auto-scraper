@@ -79,9 +79,9 @@ class Supabase:
         return response.data
 
 
-def init_selenium(quit=True, page=1, destination=''):
+def init_selenium(url=URL, quit=True, page=1, destination=''):
     driver = Selenium()
-    driver.get_page(URL, page)
+    driver.get_page(url, page)
     driver.click_related_question()
     driver.download_page(destination)
     if quit:

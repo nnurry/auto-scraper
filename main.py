@@ -2,12 +2,16 @@ from json import dumps, load
 from os import system
 from bs4 import BeautifulSoup, Tag
 from models import Supabase, init_selenium
-from utils import write_file
+from utils import write_file, generate_url
 from sys import argv
+from const import URL
 import yake
 
 NUM_OF_PAGES = 3
 
+url = URL
+
+print("URL = {}".format(url))
 
 def aggregate(directory_path, destination='./data/aggregated.json'):
     PARAMS = dict(mode='r', encoding='utf-8')
@@ -123,6 +127,7 @@ def extract_local(local_body: Tag):
     local_ads = local_body.find_all('div', class_='rllt__details')
     local_dicts = []
     for local_ad in local_ads:
+        # print(local_ad.a)
         local_data = []
         for local_ in local_ad.contents:
             local_ = deep_split(trim(local_))
@@ -163,7 +168,7 @@ def step_1(run_selenium):
     # init
     params = dict(file="./html/page-1.html", mode="r", encoding="utf-8")
     if run_selenium:
-        init_selenium(destination=params['file'])
+        init_selenium(url, destination=params['file'])
     soup = read_and_make_soup(params)
     # execute
     content_div = extract_content(soup)
@@ -172,26 +177,32 @@ def step_1(run_selenium):
 
     organic_body, local_body = extract_segment(content_div)
     organic_results, related_results = extract_organic(organic_body)
-    local_dicts = extract_local(local_body)
-    local_results = {
-        'more_location_link': local_dicts['more_location_link'], 'places': []}
+    local_results = {}
     local_ads = []
-    for local_dict in local_dicts['places']:
-        local_results['places'].append({
-            'title': local_dict['title'],
-            'website': local_dict['website'],
-            'place_id': local_dict['place_id']
-        })
-        local_ads.append({
-            'link': local_dict['website'],
-            'rating': float(local_dict['rating'].replace(',', '.')),
-            'rating_count': int(local_dict['rating_count']),
-            'badge': None,
-            'service_area': local_dict['service_area'],
-            'hours': local_dict['hours'],
-            'years_in_business': local_dict['years_in_business'],
-            'phone': local_dict['phone'].replace('-', '').replace(' ', '')
-        })
+    
+    if local_body:
+        local_dicts = extract_local(local_body)
+        local_results = {
+            'more_location_link': local_dicts['more_location_link'], 
+            'places': []
+        }
+        for local_dict in local_dicts['places']:
+            local_results['places'].append({
+                'title': local_dict['title'],
+                'website': local_dict['website'],
+                'place_id': local_dict['place_id']
+            })
+            local_ads.append({
+                'link': local_dict['website'],
+                'rating': float(local_dict['rating'].replace(',', '.')),
+                'rating_count': int(local_dict['rating_count']),
+                'badge': None,
+                'service_area': local_dict['service_area'],
+                'hours': local_dict['hours'],
+                'years_in_business': local_dict['years_in_business'],
+                'phone': local_dict['phone'].replace('-', '').replace(' ', '')
+            })
+
     write_file(dumps(organic_results), './data/organic_links.json', 'w')
     write_file(dumps(local_results), './data/local_results.json', 'w')
     write_file(dumps(local_ads), './data/local_ads.json', 'w')
@@ -206,7 +217,7 @@ def step_2(run_selenium):
         filepath = f'./html/page-{i + 1}.html'
         params = dict(file=filepath, mode="r", encoding="utf-8")
         if run_selenium:
-            init_selenium(page=i + 1, destination=filepath)
+            init_selenium(url, page=i + 1, destination=filepath)
         soup = read_and_make_soup(params)
 
         h1s = soup.find_all('h1')
@@ -262,7 +273,7 @@ def step_4():
     aggregate('./data')
 
 def run():
-    system("cls")
+    # system("cls")
     fns = [step_1, step_2, step_3, step_4]
     if len(argv) > 1:
         index = int(argv[1])
@@ -287,5 +298,35 @@ def run():
     else:
         raise Exception('Not enough parameters')    
 
+def run_alternative():
+    """
+        If you want to query, please change parameters below
+    """
+    # system("cls")
+    step = int(input('Select step (1 | 2 | 3 | 4): '))
+    if step > 4 or step < 1:
+        raise Exception('Step must be int from 1 to 4')
+    question = input('What is your query? ')
+    if not question:
+        raise Exception('Please don\'t leave the query empty, try again')
+    area = input('Choose the area: ')
+    if not area:
+        raise Exception('Please don\'t leave the location empty, try again')
+    url = URL if (not question or not area) else generate_url(question, area)
+    print("URL = {}".format(url))
+    fns = [step_1, step_2, step_3, step_4]
+    if step == 1 or step == 2:
+        scrape = input('Do you want to scrape the web? ')
+        param = scrape.lower()
+        if param in ['true', 'yes', 'y', 't']:
+            param = True
+        elif param == ['false', 'no', 'n', 'f']:
+            param = False
+        else:
+            raise Exception('Invalid parameter ("true" or "false" required)')
+        fns[step - 1](param)
+    else:
+        fns[step - 1]()
+    
 if __name__ == "__main__":
     run()
