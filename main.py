@@ -17,8 +17,6 @@ import yake
 
 NUM_OF_PAGES = 3
 
-# url = URL
-
 def step_1(url, run_selenium: bool):
     """Extract organic urls, local data and related questions into .json files"""
     # init
@@ -96,10 +94,7 @@ def step_2(url, run_selenium: bool):
 
 
 def step_3():
-    """
-    h1, h2 full of default keyword -> analyze h3, p
-    h3 gives generic and badly categorized keywords -> ignore h3 also
-    """
+    """Extract n-grams keywords into .json with descending ranking"""
     def get_field(data, key, field):
         return ' . '.join(data[key][field])
 
@@ -126,6 +121,7 @@ def step_3():
 
 
 def step_4():
+    """Aggregate and pipeline extracted data into Supabase (pending)"""
     aggregate('./data')
 
 def run():
@@ -169,4 +165,5 @@ def run():
         raise Exception('Not enough parameters')
     
 if __name__ == "__main__":
-    run()
+    # run()
+    step_1('https://www.google.com/search?q=top+10+electricians+in+area&near=oregon', True)
