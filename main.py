@@ -1,15 +1,10 @@
 from json import dumps, load
 from os import system
 from bs4 import BeautifulSoup, Tag
-from models import init_selenium
+from models import Supabase, init_selenium
 from utils import write_file
 from sys import argv
 import yake
-import os
-from supabase import create_client, Client
-from dotenv import load_dotenv
-
-load_dotenv()
 
 NUM_OF_PAGES = 3
 
@@ -262,24 +257,13 @@ def step_3():
 
 
 def step_4():
-    aggregate('./data')
-    # def sign_up(supabase: Client, email: str, password: str):
-    #     return supabase.auth.sign_up(email=email, password=password)
-    
-    # def sign_in(supabase: Client, email: str, password: str):
-    #     return supabase.auth.sign_in(email=email, password=password)
-    
-    # def sign_out(supabase: Client, email: str, password: str):
-    #     return supabase.auth.sign_out(email=email, password=password)
-
-    # url = os.environ.get("SUPABASE_URL")
-    # key = os.environ.get("SUPABASE_KEY")
-    # supabase = create_client(url, key)
-    # user = sign_in(supabase, 'kori@gmail.com', '123456')
-    # print(user)
+    # aggregate('./data')
+    supabase = Supabase()
+    user = supabase.sign_in('kori@gmail.com', '123456')
+    print(user)
 
 if __name__ == "__main__":
-    system("cls")
+    # system("cls")
     fns = [step_1, step_2, step_3, step_4]
     if len(argv) > 1:
         index = int(argv[1])
