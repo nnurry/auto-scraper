@@ -1,5 +1,5 @@
 from json import dumps, load
-from bs4 import BeautifulSoup, Tag
+from bs4 import BeautifulSoup, ResultSet, Tag
 from utils import write_file
 
 def read_and_make_soup(params: dict):
@@ -107,32 +107,39 @@ def extract_local(local_body: Tag):
     def filter_website(url: str):
         return True if ("http" in url or "https" in url) and ("google" not in url) else False
 
+    def get_local_data(local_ad):
+        local_data = []
+        for local_ in local_ad.contents:
+            local_ = deep_split(format_(local_))
+            local_data = [*local_data, *local_]
+        return local_data
+
+    def get_local_dicts(local_ads: ResultSet):
+        for local_ad in local_ads:
+            # print(local_ad.a)
+            local_data = get_local_data(local_ad)
+            service_area = local_data.pop(4) if len(local_data) > 7 else None
+            local_dict = {
+                'title': local_data[0],
+                'rating': local_data[1][:3],
+                'rating_count': local_data[1][4:-1],
+                'type': local_data[2],
+                'years_in_business': local_data[3],
+                'phone': local_data[4],
+                'hours': local_data[5],
+                'service_type': local_data[6],
+                'service_area': service_area
+            }
+            local_dicts.append(local_dict)
+        return local_dicts
+
     local_websites = list(
         map(lambda url: url['href'], local_body.find_all('a', href=True)))
 
     local_websites = list(filter(filter_website, local_websites))
 
     local_ads = local_body.find_all('div', class_='rllt__details')
-    local_dicts = []
-    for local_ad in local_ads:
-        # print(local_ad.a)
-        local_data = []
-        for local_ in local_ad.contents:
-            local_ = deep_split(format_(local_))
-            local_data = [*local_data, *local_]
-        service_area = local_data.pop(4) if len(local_data) > 7 else None
-        local_dict = {
-            'title': local_data[0],
-            'rating': local_data[1][:3],
-            'rating_count': local_data[1][4:-1],
-            'type': local_data[2],
-            'years_in_business': local_data[3],
-            'phone': local_data[4],
-            'hours': local_data[5],
-            'service_type': local_data[6],
-            'service_area': service_area
-        }
-        local_dicts.append(local_dict)
+    local_dicts = get_local_dicts(local_ads)
 
     local_ads = list(
         map(lambda x: x['data-cid'], local_body.find_all('a', attrs={'data-cid': True})))
