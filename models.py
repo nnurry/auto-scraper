@@ -10,9 +10,9 @@ class Selenium:
     def __init__(self, options=None, executable_path=None):
         if options is None:
             options = Options()
-            options.headless = True
             options.add_experimental_option(
                 'prefs', {'intl.accept_languages': 'en-GB'})
+            # options.headless = True
 
         if executable_path is None:
             executable_path = DRIVER_PATH

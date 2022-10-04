@@ -5,9 +5,36 @@ from models import init_selenium
 from utils import write_file
 from sys import argv
 import yake
+import os
+from supabase import create_client, Client
+from dotenv import load_dotenv
 
-NUM_OF_PAGES = 10
+load_dotenv()
 
+NUM_OF_PAGES = 3
+
+
+def aggregate(directory_path, destination='./data/aggregated.json'):
+    PARAMS = dict(mode='r', encoding='utf-8')
+    child_files = [
+        'organic_links', 
+        'local_results', 
+        'local_ads', 
+        'keywords',
+        'questions',
+    ]
+    def open_files(directory_path, filenames):
+        return [open(f'{directory_path}/{filename}.json', **PARAMS) for filename in filenames]
+    def close_files(files):
+        for file in files:
+            file.close()
+    files = open_files(directory_path, child_files)
+    data = {field: {} for field in child_files}
+    for i, file in enumerate(files):
+        data[child_files[i]] = load(file)
+    write_file(dumps(data), destination, encoding=PARAMS['encoding'])
+    close_files(files)
+    return data
 
 def read_and_make_soup(params: dict):
     with open(**params) as fp:
@@ -140,7 +167,7 @@ def step_1():
     """DRIVER CODE STEP 1"""
     # init
     params = dict(file="./html/page-1.html", mode="r", encoding="utf-8")
-    init_selenium(destination=params['file'])
+    # init_selenium(destination=params['file'])
     soup = read_and_make_soup(params)
     # execute
     content_div = extract_content(soup)
@@ -169,10 +196,10 @@ def step_1():
             'years_in_business': local_dict['years_in_business'],
             'phone': local_dict['phone'].replace('-', '').replace(' ', '')
         })
-    write_file(dumps(local_results), './data/local.json', 'w')
-    write_file(dumps(organic_results), './data/organic.json', 'w')
-    write_file(dumps(related_results), './data/related.json', 'w')
-    write_file(dumps(local_ads), './data/ads.json', 'w')
+    write_file(dumps(organic_results), './data/organic_links.json', 'w')
+    write_file(dumps(local_results), './data/local_results.json', 'w')
+    write_file(dumps(local_ads), './data/local_ads.json', 'w')
+    write_file(dumps(related_results), './data/questions.json', 'w')
 
 
 def step_2():
@@ -182,7 +209,7 @@ def step_2():
         # init
         filepath = f'./html/page-{i + 1}.html'
         params = dict(file=filepath, mode="r", encoding="utf-8")
-        init_selenium(page=i + 1, destination=filepath)
+        # init_selenium(page=i + 1, destination=filepath)
         soup = read_and_make_soup(params)
 
         h1s = soup.find_all('h1')
@@ -201,7 +228,7 @@ def step_2():
 
         step_2_data[f'page {i + 1}'] = data
 
-    write_file(dumps(step_2_data), './data/step-2.json', 'w')
+    write_file(dumps(step_2_data), './data/header.json', 'w')
 
 
 def step_3():
@@ -213,7 +240,7 @@ def step_3():
         return ' . '.join(data[key][field])
 
     kw_extractor = yake.KeywordExtractor(top=10, stopwords=None)
-    with open('./data/step-2.json', 'r', encoding='utf-8') as fp:
+    with open('./data/header.json', 'r', encoding='utf-8') as fp:
         step_2_data = load(fp)
 
     h3s = []
@@ -228,15 +255,28 @@ def step_3():
     write_file(
         dumps([{'rank': i + 1, 'keyword': packaged[0], 'score': packaged[1]}
                for i, (packaged) in enumerate(keywords[::-1])]),
-        './data/step-3.json',
+        './data/keywords.json',
         'w',
         'utf-8'
     )
 
 
 def step_4():
-    print('step 4')
+    aggregate('./data')
+    # def sign_up(supabase: Client, email: str, password: str):
+    #     return supabase.auth.sign_up(email=email, password=password)
+    
+    # def sign_in(supabase: Client, email: str, password: str):
+    #     return supabase.auth.sign_in(email=email, password=password)
+    
+    # def sign_out(supabase: Client, email: str, password: str):
+    #     return supabase.auth.sign_out(email=email, password=password)
 
+    # url = os.environ.get("SUPABASE_URL")
+    # key = os.environ.get("SUPABASE_KEY")
+    # supabase = create_client(url, key)
+    # user = sign_in(supabase, 'kori@gmail.com', '123456')
+    # print(user)
 
 if __name__ == "__main__":
     system("cls")
