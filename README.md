@@ -1,4 +1,4 @@
-# auto-scraper
+# auto-scraper on google.com
 ## Setting up environment
 1) Create virtual environment and install packages:
 - `python -m venv env`
