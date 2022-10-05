@@ -1,7 +1,7 @@
 from json import dumps, load
 from os import system
 from models import Supabase, init_selenium
-from utils import write_file, generate_url
+from utils import write_file, generate_url, make_dir
 from sys import argv
 from const import URL
 from souper import (
@@ -20,6 +20,7 @@ NUM_OF_PAGES = 3
 def step_1(url, run_selenium: bool):
     """Extract organic urls, local data and related questions into .json files"""
     # init
+    make_dir('./data')
     params = dict(file="./html/page-1.html", mode="r", encoding="utf-8")
     if run_selenium:
         init_selenium(url, destination=params['file'])
@@ -73,6 +74,7 @@ def step_1(url, run_selenium: bool):
 
 def step_2(url, run_selenium: bool):
     """Extracting h1, h2, h3, h4 and p in search pages"""
+    make_dir('./data')
     step_2_data = dict()
     for i in range(0, NUM_OF_PAGES):
         # init

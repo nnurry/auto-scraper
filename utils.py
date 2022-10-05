@@ -1,3 +1,5 @@
+from os import makedirs
+
 def _path(name):
     return "./data/" + name
 
@@ -38,3 +40,10 @@ def deep_split(string: str):
         return later
     else:
         return [string]
+    
+def make_dir(filepath: str):
+    try:
+        makedirs(filepath)    
+        print(f"Created {filepath}")
+    except FileExistsError:
+        print(f"{filepath} already exists")
