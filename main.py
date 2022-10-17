@@ -1,9 +1,11 @@
 from json import dumps, load
+import json
+import os.path
 from os import system
 from models import Supabase, init_selenium
 from utils import write_file, make_dir
 from sys import argv
-from const import URL
+from const import URL,SUPEBASE_TABLE
 from souper import (
     format_,
     read_and_make_soup,
@@ -152,6 +154,16 @@ def step_3(**kwargs):
 def step_4(**kwargs):
     """Aggregate and pipeline extracted data into Supabase (pending)"""
     aggregate("./data")
+    my_path = os.path.abspath(os.path.dirname(__file__))
+    path = os.path.join(my_path, "./data/aggregated.json")
+    supabase = Supabase()
+    try:
+        f = open(path)
+        data = json.load(f)
+        f.close()
+        supabase.insert(SUPEBASE_TABLE,key_value= json.dumps(data))
+    except:
+        print("Something went wrong when opening the file")
 
 
 def run():
