@@ -1,6 +1,8 @@
 from json import dumps, load
+from operator import index
 from bs4 import BeautifulSoup, Tag
 from utils import write_file, format_, deep_split, generate_url
+from functools import reduce
 
 
 def inquire():
@@ -79,39 +81,36 @@ def extract_organic(organic_body: Tag):
     organic_results = []
     related_results = []
 
-    for organic_result in organic.find_all("div", class_="MjjYud"):
-        if organic_result.cite and organic_result.h3:
-            organic_results.append(
-                {
-                    "title": format_(organic_result.h3),
-                    "link": format_(organic_result.cite),
-                }
-            )
+    for organic_ in organic.find_all("div", class_="MjjYud"):
+        if organic_.cite and organic_.h3:
+            organic_result = {
+                "title": format_(organic_.h3),
+                "link": organic_.cite.text.split("\u203a")[0],
+            }
+            organic_results.append(organic_result)
 
     organic_results = [
         {"position": index + 1, **organic_result}
         for index, organic_result in enumerate(organic_results)
     ]
 
-    for related_result in related.find_all("div", jsname="Cpkphb"):
-        question = format_(related_result.span)
-        answer_title = format_(
-            related_result.find("div", attrs={"data-tts": "answers"})
-        )
-        answer_body = format_(related_result.find("div", role="heading"))
+    for related_ in related.find_all("div", jsname="Cpkphb"):
+        question = format_(related_.span)
+        answer_title = format_(related_.find("div", attrs={"data-tts": "answers"}))
+        answer_body = format_(related_.find("div", role="heading"))
         # NOTE: in answer_body there might be 2 div with role = heading -> handle this later
-        article_link = format_(related_result.find("a", href=True)["href"], False)
-        article_header = format_(related_result.find("h3"))
-        related_results.append(
-            {
-                "question": question,
-                "snippet": " - ".join([answer_title, answer_body])
-                if answer_title
-                else answer_body,
-                "title": article_header,
-                "link": article_link,
-            }
-        )
+        article_link = related_.find("a", href=True)["href"]
+        article_link = format_(article_link, False)
+        article_header = format_(related_.find("h3"))
+        related_result = {
+            "question": question,
+            "snippet": " - ".join([answer_title, answer_body])
+            if answer_title
+            else answer_body,
+            "title": article_header,
+            "link": article_link,
+        }
+        related_results.append(related_result)
 
     return organic_results, related_results
 
@@ -124,27 +123,141 @@ def extract_local(local_body: Tag):
             else False
         )
 
+    def convert_to_base_10(num_string: str):
+        def get_base_10(times: int):
+            return f'1{times * "0"}'
+
+        kws = ["K", "M", "B"]
+        for i, kw in enumerate(kws):
+            if kw in num_string:
+                num_string += get_base_10((i + 1) * 3)
+                kws = num_string.split(kw)
+                break
+
+        if len(kws) == 2:
+            kws = list(map(lambda x: float(x), kws))
+            num_string = reduce(lambda acc, ele: acc * ele, kws, 1)
+
+        return int(num_string)
+
     def get_local_data(local_ad):
         local_data = []
         for local_ in local_ad.contents:
-            local_ = deep_split(format_(local_))
-            local_data = [*local_data, *local_]
+            local_content = get_local_content(local_)
+            if local_content:
+                local_data = [*local_data, local_content]
         return local_data
 
+    def get_local_content(local_ad_content):
+        local_ad_content = deep_split(format_(local_ad_content))
+        local_ad_content = list(filter(lambda x: '"' not in x, local_ad_content))
+        return local_ad_content
+
     def get_local_dict(local_ad):
+        def process_contact(data):
+            output = {}
+            indexes = []
+            for i, contact_ in enumerate(data):
+                if str.isdigit(
+                    contact_.replace("+", "").replace("-", " ").replace(" ", "")
+                ):
+                    output["phone"] = data[i].replace("-", " ").replace(" ", "")
+                    indexes.append(i)
+                if "in business" in contact_:
+                    output["years_in_business"] = data[i]
+                    indexes.append(i)
+
+            for index, _ in enumerate(data):
+                if index not in indexes:
+                    output["service_area"] = data[index]
+            return output
+
+        def process_schedule(data: list):
+            output = {"hours": ", ".join(data)}
+            return output
+
+        def process_service_type(data: list):
+            output = {"service_type": ", ".join(data)}
+            return output
+
+        def check_deep_type(data):
+            for phrase in data:
+                if str.isdigit(
+                    phrase.replace("+", "").replace("-", " ").replace(" ", "")
+                ):
+                    return "contact"
+                if "in business" in phrase:
+                    return "contact"
+                if "," in phrase:
+                    return "contact"
+                if "Close" in phrase:
+                    return "schedule"
+                if "Open" in phrase:
+                    return "schedule"
+                if "on-site" in phrase.lower() or "online" in phrase.lower():
+                    return "service_type"
+                return "miscel"
+
+        def generate_dict(local_data):
+            itr = 0
+            data = {}
+            processed = []
+            while len(local_data) > 0:
+                if itr == 0:
+                    title_line = local_data.pop(0)
+                    title_data = {"title": title_line[0]}
+                    data.update(title_data)
+                    processed.append("title")
+                elif itr == 1:
+                    popular_line = local_data.pop(0)
+                    popular_data = {
+                        "rating": float(popular_line[0][:3].replace(",", ".")),
+                        "rating_count": convert_to_base_10(popular_line[0][4:-1]),
+                        "type": popular_line[-1],
+                    }
+                    data.update(popular_data)
+                    processed.append("popular")
+                else:
+                    line_data = local_data.pop(0)
+                    line_type = check_deep_type(line_data)
+                    if line_type == "contact":
+                        data.update(process_contact(line_data))
+                        processed.append("contact")
+                    if line_type == "schedule":
+                        data.update(process_schedule(line_data))
+                        processed.append("schedule")
+                    if line_type == "service_type":
+                        data.update(process_service_type(line_data))
+                        processed.append("service_type")
+                    if line_type == "miscel":
+                        if "contact" not in processed:
+                            data.update({"service_area": ", ".join(line_data)})
+                            processed.append("contact")
+                        else:
+                            data.update(dict(miscel=line_data))
+                            processed.append("miscel")
+                itr += 1
+            return data
+
+        schema = set(
+            [
+                "title",
+                "rating",
+                "rating_count",
+                "type",
+                "phone",
+                "years_in_business",
+                "service_area",
+                "service_type",
+                "hours",
+                "badge",
+            ]
+        )
         local_data = get_local_data(local_ad)
-        service_area = local_data.pop(4) if len(local_data) > 7 else None
-        local_dict = {
-            "title": local_data[0],
-            "rating": local_data[1][:3],
-            "rating_count": local_data[1][4:-1],
-            "type": local_data[2],
-            "years_in_business": local_data[3],
-            "phone": local_data[4],
-            "hours": local_data[5],
-            "service_type": local_data[6],
-            "service_area": service_area,
-        }
+        local_dict = generate_dict(local_data)
+        missing_keys = schema.difference(set(local_dict.keys()))
+        for missing_key in missing_keys:
+            local_dict[missing_key] = None
         return local_dict
 
     local_results = local_body.find_all("div", class_="VkpGBb")

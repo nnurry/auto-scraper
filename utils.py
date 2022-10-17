@@ -33,11 +33,26 @@ def generate_url(question: str, area: str):
 
 
 def format_(string: str, get_text: bool = True):
+    def pre_clean(string: str):
+        f_pairs = [
+            ("\n", ""),
+            ("\u22c5", "|"),
+            # ("\u203a", "/"),
+        ]
+        string = string.strip()
+        for f_pair in f_pairs:
+            string = string.replace(*f_pair)
+        return string.split(" ")
+
     if string:
         if get_text:
             string = string.text
+        f_pairs = ()
         string = " ".join(
-            filter(lambda x: x != "", string.strip().replace("\n", "").split(" "))
+            filter(
+                lambda x: x != "",
+                pre_clean(string),
+            )
         )
         return string
     return ""

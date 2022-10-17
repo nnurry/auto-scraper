@@ -49,6 +49,16 @@ def step_1(**kwargs):
             "places": [],
         }
 
+        local_result_schema = [
+            "rating",
+            "rating_count",
+            "badge",
+            "service_area",
+            "hours",
+            "years_in_business",
+            "phone",
+        ]
+
         for local_dict in local_dicts["places"]:
 
             local_result = {
@@ -56,15 +66,7 @@ def step_1(**kwargs):
                 "place_id": local_dict["place_id"],
             }
 
-            local_ad = {
-                "rating": float(local_dict["rating"].replace(",", ".")),
-                "rating_count": int(local_dict["rating_count"]),
-                "badge": None,
-                "service_area": local_dict["service_area"],
-                "hours": local_dict["hours"],
-                "years_in_business": local_dict["years_in_business"],
-                "phone": local_dict["phone"].replace("-", "").replace(" ", ""),
-            }
+            local_ad = {key: local_dict[key] for key in local_result_schema}
 
             if local_dict.get(
                 "website"
