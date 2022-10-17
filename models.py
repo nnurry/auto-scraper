@@ -12,22 +12,25 @@ load_dotenv()
 
 SUPABASE_URL = os.environ.get("SUPABASE_URL")
 SUPABASE_KEY = os.environ.get("SUPABASE_KEY")
+
+
 class Selenium:
     def __init__(self, options=None, executable_path=None):
         if options is None:
             options = Options()
             options.headless = True
-            options.add_argument('--lang=en-GB')
+            options.add_argument("--lang=en-GB")
 
         if executable_path is None:
             executable_path = DRIVER_PATH
-        self.driver = webdriver.Chrome(
-            options=options, executable_path=executable_path)
+        self.driver = webdriver.Chrome(options=options, executable_path=executable_path)
 
     def get_page(self, url=None, page=1):
         if not url:
             url = URL
-        self.driver.get(url + f'&start={(page - 1) * 10}')
+        url += f"&start={(page - 1) * 10}"
+        print("\n- - - Scraping {} - - -\n".format(url))
+        self.driver.get(url)
         return self.driver
 
     def click_related_question(self, xpath="//div[@jsname = 'Cpkphb']"):
@@ -55,31 +58,32 @@ class Selenium:
     def quit(self):
         self.driver.quit()
 
+
 class Supabase:
     def __init__(self):
         self.client = create_client(SUPABASE_URL, SUPABASE_KEY)
-        
+
     def sign_up(self, email: str, password: str):
         return self.client.auth.sign_up(email=email, password=password)
-    
+
     def sign_in(self, email: str, password: str):
         return self.client.auth.sign_in(email=email, password=password)
-    
+
     def sign_out(self):
         return self.client.auth.sign_out()
-        
+
     def insert(self, table, key_value, upsert=False):
         params = dict(json=key_value, upsert=upsert)
-        response =  self.client.table(table).insert(**params).execute()
+        response = self.client.table(table).insert(**params).execute()
         return response.data
-    
+
     def select(self, table: str, columns: list):
-        columns = '*' if not len(columns) else ','.join(columns)
-        response =  self.client.table(table).select(columns).execute()
+        columns = "*" if not len(columns) else ",".join(columns)
+        response = self.client.table(table).select(columns).execute()
         return response.data
 
 
-def init_selenium(url=URL, quit=True, page=1, destination=''):
+def init_selenium(url=URL, quit=True, page=1, destination=""):
     driver = Selenium()
     driver.get_page(url, page)
     driver.click_related_question()
