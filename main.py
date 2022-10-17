@@ -5,7 +5,7 @@ from os import system
 from models import Supabase, init_selenium
 from utils import write_file, make_dir
 from sys import argv
-from const import URL,SUPEBASE_TABLE
+from const import URL, SUPEBASE_TABLE
 from souper import (
     format_,
     read_and_make_soup,
@@ -163,7 +163,7 @@ def step_4(**kwargs):
         f = open(path)
         data = json.load(f)
         f.close()
-        supabase.insert(SUPEBASE_TABLE,key_value= json.dumps(data))
+        supabase.insert(SUPEBASE_TABLE, key_value=json.dumps(data))
     except:
         print("Something went wrong when opening the file")
 

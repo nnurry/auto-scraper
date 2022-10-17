@@ -12,8 +12,9 @@ load_dotenv()
 
 # SUPABASE_URL = os.environ.get("SUPABASE_URL")
 # SUPABASE_KEY = os.environ.get("SUPABASE_KEY")
-SUPABASE_URL = 'https://bygyxaadwcmznscegtgm.supabase.co'
-SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImJ5Z3l4YWFkd2Ntem5zY2VndGdtIiwicm9sZSI6ImFub24iLCJpYXQiOjE2NjYwMTc4MDMsImV4cCI6MTk4MTU5MzgwM30.BA86-BFW0Zela8peTElpoK3VTZzkBQs02d12bYQqer4'
+SUPABASE_URL = "https://bygyxaadwcmznscegtgm.supabase.co"
+SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImJ5Z3l4YWFkd2Ntem5zY2VndGdtIiwicm9sZSI6ImFub24iLCJpYXQiOjE2NjYwMTc4MDMsImV4cCI6MTk4MTU5MzgwM30.BA86-BFW0Zela8peTElpoK3VTZzkBQs02d12bYQqer4"
+
 
 class Selenium:
     def __init__(self, options=None, executable_path=None):
@@ -74,9 +75,7 @@ class Supabase:
         return self.client.auth.sign_out()
 
     def insert(self, table, key_value, upsert=False):
-        params = {
-            'data_json':key_value
-        }
+        params = {"data_json": key_value}
         response = self.client.table(table).insert(params).execute()
         return response.data
 
