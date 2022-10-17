@@ -71,3 +71,5 @@ websockets==9.1
 wsproto==1.2.0
 yake==0.4.8
 zipp==3.8.1
+fastapi==0.85.1
+uvicorn==0.18.3

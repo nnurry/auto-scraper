@@ -17,3 +17,7 @@
 ## SAMPLE CALL
 - Run step 1 with the option to scrape the source page: `python main.py 1 true`
 - Enter the question and the location for google to search
+
+## RUN FASTAPI SERVER
+- After the app completes data collection, open a new CMD and run `uvicorn src.fastapi:app --reload`
+- Access `http://127.0.0.1:8000` on browser
