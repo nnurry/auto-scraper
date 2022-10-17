@@ -85,7 +85,7 @@ def extract_organic(organic_body: Tag):
         if organic_.cite and organic_.h3:
             organic_result = {
                 "title": format_(organic_.h3),
-                "link": organic_.cite.text.split("\u203a")[0],
+                "link": organic_.cite.text.split(" \u203a ")[0],
             }
             organic_results.append(organic_result)
 
