@@ -12,6 +12,7 @@ load_dotenv()
 
 SUPABASE_URL = os.environ.get("SUPABASE_URL")
 SUPABASE_KEY = os.environ.get("SUPABASE_KEY")
+
 class Selenium:
     def __init__(self, options=None, executable_path=None):
         if options is None:
@@ -54,6 +55,7 @@ class Selenium:
 
     def quit(self):
         self.driver.quit()
+
 
 class Supabase:
     def __init__(self):

@@ -17,6 +17,7 @@ import yake
 
 NUM_OF_PAGES = 3
 
+
 def step_1(url, run_selenium: bool):
     """Extract organic urls, local data and related questions into .json files"""
     # init
@@ -133,6 +134,7 @@ def step_3():
 def step_4():
     """Aggregate and pipeline extracted data into Supabase (pending)"""
     aggregate('./data')
+
 
 def run():
     system("cls")

@@ -2,10 +2,12 @@ from json import dumps, load
 from bs4 import BeautifulSoup, Tag
 from utils import write_file, format_, deep_split
 
+
 def read_and_make_soup(params: dict):
     with open(**params) as fp:
         soup = BeautifulSoup(fp)
     return soup
+
 
 def aggregate(directory_path: str, destination: str ='./data/aggregated.json'):
     
@@ -33,6 +35,7 @@ def aggregate(directory_path: str, destination: str ='./data/aggregated.json'):
     close_multiple_files(files)
     return data
 
+
 def get_content(main_div: Tag):
     main_res = main_div.find(class_='GyAeWb')
     if main_res:
@@ -42,16 +45,19 @@ def get_content(main_div: Tag):
         return main_res
     return None
 
+
 def extract_content(soup: BeautifulSoup):
     html = soup.html
     body = html.body
     main = body.find(name='div', class_='main')
     return get_content(main)
 
+
 def extract_segment(content: Tag):
     organic_body = content.find('div', class_='s6JM6d')
     local_body = content.find('div', class_='M8OgIe')
     return organic_body, local_body
+
 
 def extract_organic(organic_body: Tag):
     organic = organic_body.find('div', id='search')
@@ -89,6 +95,7 @@ def extract_organic(organic_body: Tag):
         })
 
     return organic_results, related_results
+
 
 def extract_local(local_body: Tag):
     def filter_website(url: str):
