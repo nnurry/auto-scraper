@@ -75,15 +75,28 @@ class Supabase:
     def sign_out(self):
         return self.client.auth.sign_out()
 
-    def insert(self, table, key_value, search_key, search_location, upsert=False):
-        params = {"data_json": key_value, "search_key": search_key,
-                  "search_location": search_location}
+    def insert(self, table, uuid, key_value, search_key, search_location, status, upsert=False):
+        params = {"uuid": uuid, "data_json": key_value, "search_key": search_key,
+                  "search_location": search_location, 'status': status}
         response = self.client.table(table).insert(params).execute()
+        return response.data
+
+    def update(self,  table, uuid, key_value, status):
+        params = {"data_json": key_value, "status": status}
+        response = self.client.table(table).update(
+            params).eq("uuid", uuid).execute()
         return response.data
 
     def select_all(self, table: str, columns: list):
         columns = "*" if not len(columns) else ",".join(columns)
         response = self.client.table(table).select(columns).execute()
+        return response.data
+
+    def select_by_uuid(self, table: str, columns: list, data_uuid):
+        columns = "*" if not len(columns) else ",".join(columns)
+        if data_uuid:
+            response = self.client.table(table).select(
+                columns).eq("uuid", data_uuid).execute()
         return response.data
 
     def select_by(self, table: str, columns: list, search_key: str, search_location: str):

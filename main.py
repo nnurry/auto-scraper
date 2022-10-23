@@ -156,23 +156,27 @@ def step_3(**kwargs):
 def step_4(**kwargs):
     search_key = kwargs.get("search_key")
     location = kwargs.get("location")
+    data_uuid = kwargs.get("data_uuid")
     """Aggregate and pipeline extracted data into Supabase (pending)"""
     aggregate("./data")
     my_path = os.path.abspath(os.path.dirname(__file__))
     path = os.path.join(my_path, "./data/aggregated.json")
     supabase = Supabase()
+
     try:
         f = open(path)
         data = json.load(f)
         f.close()
-        supabase.insert(SUPEBASE_TABLE, key_value=json.dumps(
-            data), search_key=search_key, search_location=location)
+        supabase.update(table=SUPEBASE_TABLE, uuid=data_uuid, key_value=json.dumps(
+            data), status="DONE")
     except:
         print("Something went wrong when opening the file")
+        supabase.update(table=SUPEBASE_TABLE, uuid=data_uuid,
+                        key_value={}, status="FAIL")
 
 
-def run(search_key: str, location: str):
-    def get_params(run_selenium: str, search_key: str, location: str):
+def run(search_key: str, location: str, data_uuid):
+    def get_params(run_selenium: str, search_key: str, location: str, data_uuid):
         if run_selenium in [True, "true", "t", "yes", "y"]:
             run_selenium = True
         elif run_selenium in [False, "false", "f", "no", "n"]:
@@ -184,7 +188,7 @@ def run(search_key: str, location: str):
             url = inquire(search_key, location)
         else:
             url = URL
-        return dict(url=url, run_selenium=run_selenium, search_key=search_key, location=location)
+        return dict(url=url, run_selenium=run_selenium, search_key=search_key, location=location, data_uuid=data_uuid)
 
     def run_step(fns: list, cmts: list, step: int, **params):
         print("Executing step {}: {}\n\n".format(index, cmts[index - 1]))
@@ -215,7 +219,7 @@ def run(search_key: str, location: str):
 
     else:
         print("Go through every step")
-        params = get_params(True, search_key, location)
+        params = get_params(True, search_key, location, data_uuid)
         for index in range(1, len(fns) + 1):
             run_step(fns, cmts, index, **params)
 
