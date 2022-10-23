@@ -25,7 +25,8 @@ class Selenium:
 
         if executable_path is None:
             executable_path = DRIVER_PATH
-        self.driver = webdriver.Chrome(options=options, executable_path=executable_path)
+        self.driver = webdriver.Chrome(
+            options=options, executable_path=executable_path)
 
     def get_page(self, url=None, page=1):
         if not url:
@@ -74,14 +75,28 @@ class Supabase:
     def sign_out(self):
         return self.client.auth.sign_out()
 
-    def insert(self, table, key_value, upsert=False):
-        params = {"data_json": key_value}
+    def insert(self, table, key_value, search_key, search_location, upsert=False):
+        params = {"data_json": key_value, "search_key": search_key,
+                  "search_location": search_location}
         response = self.client.table(table).insert(params).execute()
         return response.data
 
-    def select(self, table: str, columns: list):
+    def select_all(self, table: str, columns: list):
         columns = "*" if not len(columns) else ",".join(columns)
         response = self.client.table(table).select(columns).execute()
+        return response.data
+
+    def select_by(self, table: str, columns: list, search_key: str, search_location: str):
+        columns = "*" if not len(columns) else ",".join(columns)
+        if search_key and not search_location:
+            response = self.client.table(table).select(
+                columns).eq("search_key", search_key).execute()
+        elif not search_key and search_location:
+            response = self.client.table(table).select(
+                columns).eq("search_location", search_location).execute()
+        else:
+            response = self.client.table(table).select(
+                columns).eq("search_key", search_key).eq("search_location", search_location).execute()
         return response.data
 
 
