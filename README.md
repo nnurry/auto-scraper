@@ -21,3 +21,4 @@
 ## RUN FASTAPI SERVER
 - After the app completes data collection, open a new CMD and run `uvicorn src.fastapi:app --reload`
 - Access `http://127.0.0.1:8000` on browser
+- Example search endpoint: http://127.0.0.1:8000/search?search_key=doctor&location=Kansas%20City%2C%20MO

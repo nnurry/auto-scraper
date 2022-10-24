@@ -23,6 +23,13 @@ def scrape_data(search_key, location, uuid):
 @app.get("/search")
 async def scraper_and_save_data_json(search_key: str, location: str, background_task: BackgroundTasks):
     if search_key and location:
+
+        supabase = Supabase()
+        response = supabase.select_by(SUPEBASE_TABLE, columns, search_key, location)
+
+        if response:
+            return {"success": True, "data": response}
+
         try:
             data_uuid = str(uuid.uuid4())
             background_task.add_task(
@@ -41,17 +48,3 @@ async def scraper_and_save_data_json(search_key: str, location: str, background_
                 'success': False,
                 'messasge': str(e)
             }
-
-
-@app.get("/resutl")
-def collect_data_json(search_key: str = '', location: str = ''):
-
-    if not search_key and not location:
-        raise HTTPException(
-            status_code=400, detail="Search key or search location is required")
-
-    supabase = Supabase()
-    response = supabase.select_by(
-        SUPEBASE_TABLE, columns, search_key, location)
-
-    return {"success": True, "data": response}
