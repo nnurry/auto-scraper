@@ -154,23 +154,29 @@ def step_3(**kwargs):
 
 
 def step_4(**kwargs):
+    search_key = kwargs.get("search_key")
+    location = kwargs.get("location")
+    data_uuid = kwargs.get("data_uuid")
     """Aggregate and pipeline extracted data into Supabase (pending)"""
     aggregate("./data")
     my_path = os.path.abspath(os.path.dirname(__file__))
     path = os.path.join(my_path, "./data/aggregated.json")
     supabase = Supabase()
+
     try:
         f = open(path)
         data = json.load(f)
         f.close()
-        supabase.insert(SUPEBASE_TABLE, key_value=json.dumps(data))
+        supabase.update(table=SUPEBASE_TABLE, uuid=data_uuid, key_value=json.dumps(
+            data), status="DONE")
     except:
         print("Something went wrong when opening the file")
+        supabase.update(table=SUPEBASE_TABLE, uuid=data_uuid,
+                        key_value={}, status="FAIL")
 
 
-
-def run():
-    def get_params(run_selenium: str):
+def run(search_key: str, location: str, data_uuid):
+    def get_params(run_selenium: str, search_key: str, location: str, data_uuid):
         if run_selenium in [True, "true", "t", "yes", "y"]:
             run_selenium = True
         elif run_selenium in [False, "false", "f", "no", "n"]:
@@ -179,10 +185,10 @@ def run():
             raise Exception('Invalid parameter ("true" or "false" required)')
 
         if run_selenium:
-            url = inquire()
+            url = inquire(search_key, location)
         else:
             url = URL
-        return dict(url=url, run_selenium=run_selenium)
+        return dict(url=url, run_selenium=run_selenium, search_key=search_key, location=location, data_uuid=data_uuid)
 
     def run_step(fns: list, cmts: list, step: int, **params):
         print("Executing step {}: {}\n\n".format(index, cmts[index - 1]))
@@ -198,6 +204,11 @@ def run():
         "Extract n-grams keywords into .json with descending ranking",
         "Aggregate and pipeline extracted data",
     ]
+
+    # TODO test all step
+    argv = []
+    # END
+
     if len(argv) > 1:
         index = int(argv[1])
         param = str(argv[2]) if len(argv) >= 3 else ""
@@ -208,7 +219,7 @@ def run():
 
     else:
         print("Go through every step")
-        params = get_params(True)
+        params = get_params(True, search_key, location, data_uuid)
         for index in range(1, len(fns) + 1):
             run_step(fns, cmts, index, **params)
 
