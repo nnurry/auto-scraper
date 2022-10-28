@@ -2,6 +2,7 @@ anyio==3.6.1
 async-generator==1.10
 attrs==22.1.0
 beautifulsoup4==4.11.1
+black==22.10.0
 bleach==5.0.1
 certifi==2022.9.24  
 cffi==1.15.1

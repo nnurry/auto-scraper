@@ -27,8 +27,7 @@ def read_and_make_soup(params: dict):
     return soup
 
 
-def aggregate(directory_path: str, destination: str ='./data/aggregated.json'):
-    
+def aggregate(directory_path: str, destination: str = "./data/aggregated.json"):
     def open_multiple_files(directory_path, filenames):
         return [
             open(f"{directory_path}/{filename}.json", **PARAMS)
@@ -101,8 +100,7 @@ def extract_organic(organic_body: Tag):
 
     for related_ in related.find_all("div", jsname="Cpkphb"):
         question = format_(related_.span)
-        answer_title = format_(related_.find(
-            "div", attrs={"data-tts": "answers"}))
+        answer_title = format_(related_.find("div", attrs={"data-tts": "answers"}))
         answer_body = format_(related_.find("div", role="heading"))
         # NOTE: in answer_body there might be 2 div with role = heading -> handle this later
         article_link = related_.find("a", href=True)["href"]
@@ -156,8 +154,7 @@ def extract_local(local_body: Tag):
 
     def get_local_content(local_ad_content):
         local_ad_content = deep_split(format_(local_ad_content))
-        local_ad_content = list(
-            filter(lambda x: '"' not in x, local_ad_content))
+        local_ad_content = list(filter(lambda x: '"' not in x, local_ad_content))
         return local_ad_content
 
     def get_local_dict(local_ad):
@@ -166,11 +163,9 @@ def extract_local(local_body: Tag):
             indexes = []
             for i, contact_ in enumerate(data):
                 if str.isdigit(
-                    contact_.replace("+", "").replace("-",
-                                                      " ").replace(" ", "")
+                    contact_.replace("+", "").replace("-", " ").replace(" ", "")
                 ):
-                    output["phone"] = data[i].replace(
-                        "-", " ").replace(" ", "")
+                    output["phone"] = data[i].replace("-", " ").replace(" ", "")
                     indexes.append(i)
                 if "in business" in contact_:
                     output["years_in_business"] = data[i]

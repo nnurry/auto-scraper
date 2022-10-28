@@ -167,12 +167,17 @@ def step_4(**kwargs):
         f = open(path)
         data = json.load(f)
         f.close()
-        supabase.update(table=SUPEBASE_TABLE, uuid=data_uuid, key_value=json.dumps(
-            data), status="DONE")
+        supabase.update(
+            table=SUPEBASE_TABLE,
+            uuid=data_uuid,
+            key_value=json.dumps(data),
+            status="DONE",
+        )
     except:
         print("Something went wrong when opening the file")
-        supabase.update(table=SUPEBASE_TABLE, uuid=data_uuid,
-                        key_value={}, status="FAIL")
+        supabase.update(
+            table=SUPEBASE_TABLE, uuid=data_uuid, key_value={}, status="FAIL"
+        )
 
 
 def run(search_key: str, location: str, data_uuid):
@@ -188,7 +193,13 @@ def run(search_key: str, location: str, data_uuid):
             url = inquire(search_key, location)
         else:
             url = URL
-        return dict(url=url, run_selenium=run_selenium, search_key=search_key, location=location, data_uuid=data_uuid)
+        return dict(
+            url=url,
+            run_selenium=run_selenium,
+            search_key=search_key,
+            location=location,
+            data_uuid=data_uuid,
+        )
 
     def run_step(fns: list, cmts: list, step: int, **params):
         print("Executing step {}: {}\n\n".format(index, cmts[index - 1]))
