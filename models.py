@@ -49,8 +49,8 @@ class Selenium:
         return self.driver
 
     def save_screenshot_to_s3(self):
-        self.driver.save_screenshot('ss.png')
-        client.upload_file('ss.png', 'genie-public-user-data', 'ss.png')
+        self.driver.save_screenshot('ss.jpg')
+        client.upload_file('ss.jpg', 'genie-public-user-data', 'ss.jpg')
 
     def click_related_question(self, xpath="//div[@jsname = 'Cpkphb']"):
         tries = 1
