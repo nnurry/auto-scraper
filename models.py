@@ -7,15 +7,25 @@ import time
 import os
 from supabase import create_client
 from dotenv import load_dotenv
+import boto3
 
 load_dotenv()
 
 # SUPABASE_URL = "https://bygyxaadwcmznscegtgm.supabase.co"
 # SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImJ5Z3l4YWFkd2Ntem5zY2VndGdtIiwicm9sZSI6ImFub24iLCJpYXQiOjE2NjYwMTc4MDMsImV4cCI6MTk4MTU5MzgwM30.BA86-BFW0Zela8peTElpoK3VTZzkBQs02d12bYQqer4"
+ACCESS_KEY = os.environ.get("ACCESS_KEY")
+SECRET_KEY = os.environ.get("SECRET_KEY")
 SUPABASE_URL = os.environ.get("SUPABASE_URL")
 SUPABASE_KEY = os.environ.get("SUPABASE_KEY")
 CHROMEDRIVER_PATH = "/app/.chromedriver/bin/chromedriver"
 GOOGLE_CHROME_BIN = "/app/.apt/usr/bin/google-chrome"
+
+client = boto3.client(
+    's3',
+    aws_access_key_id=ACCESS_KEY,
+    aws_secret_access_key=SECRET_KEY,
+    region_name='us-east-1'
+)
 
 
 class Selenium:
@@ -37,6 +47,10 @@ class Selenium:
         print("\n- - - Scraping {} - - -\n".format(url))
         self.driver.get(url)
         return self.driver
+
+    def save_screenshot_to_s3(self):
+        self.driver.save_screenshot('ss.png')
+        client.upload_file('ss.png', 'genie-public-user-data', 'ss.png')
 
     def click_related_question(self, xpath="//div[@jsname = 'Cpkphb']"):
         tries = 1
