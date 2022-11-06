@@ -20,7 +20,7 @@ class Selenium:
     def __init__(self, options=None, executable_path=None):
         if options is None:
             options = Options()
-            # options.headless = True
+            options.headless = True
             options.add_argument("--lang=en-GB")
 
         if executable_path is None:
