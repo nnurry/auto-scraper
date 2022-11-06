@@ -10,10 +10,12 @@ from dotenv import load_dotenv
 
 load_dotenv()
 
-# SUPABASE_URL = os.environ.get("SUPABASE_URL")
-# SUPABASE_KEY = os.environ.get("SUPABASE_KEY")
-SUPABASE_URL = "https://bygyxaadwcmznscegtgm.supabase.co"
-SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImJ5Z3l4YWFkd2Ntem5zY2VndGdtIiwicm9sZSI6ImFub24iLCJpYXQiOjE2NjYwMTc4MDMsImV4cCI6MTk4MTU5MzgwM30.BA86-BFW0Zela8peTElpoK3VTZzkBQs02d12bYQqer4"
+# SUPABASE_URL = "https://bygyxaadwcmznscegtgm.supabase.co"
+# SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImJ5Z3l4YWFkd2Ntem5zY2VndGdtIiwicm9sZSI6ImFub24iLCJpYXQiOjE2NjYwMTc4MDMsImV4cCI6MTk4MTU5MzgwM30.BA86-BFW0Zela8peTElpoK3VTZzkBQs02d12bYQqer4"
+SUPABASE_URL = os.environ.get("SUPABASE_URL")
+SUPABASE_KEY = os.environ.get("SUPABASE_KEY")
+CHROMEDRIVER_PATH = "/app/.chromedriver/bin/chromedriver"
+GOOGLE_CHROME_BIN = "/app/.apt/usr/bin/google-chrome"
 
 
 class Selenium:
@@ -21,10 +23,11 @@ class Selenium:
         if options is None:
             options = Options()
             options.headless = True
+            options.binary_location = GOOGLE_CHROME_BIN
             options.add_argument("--lang=en-GB")
 
         if executable_path is None:
-            executable_path = DRIVER_PATH
+            executable_path = CHROMEDRIVER_PATH
         self.driver = webdriver.Chrome(options=options, executable_path=executable_path)
 
     def get_page(self, url=None, page=1):
