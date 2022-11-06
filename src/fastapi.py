@@ -57,4 +57,12 @@ async def scraper_and_save_data_json(
             response = supabase.select_by_uuid(SUPEBASE_TABLE, columns, data_uuid)
             return {"data": response}
         except Exception as e:
+            supabase.insert(
+                SUPEBASE_TABLE,
+                uuid=data_uuid,
+                key_value={},
+                search_key=search_key,
+                search_location=location,
+                status="FAIL",
+            )
             return {"success": False, "messasge": str(e)}
