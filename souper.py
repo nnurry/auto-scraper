@@ -74,8 +74,17 @@ def extract_content(soup: BeautifulSoup):
 
 
 def extract_segment(content: Tag):
+    local_class = [
+        "M8OgIe",
+        "Qq3Lb"
+    ]
+
     organic_body = content.find("div", class_="s6JM6d")
-    local_body = content.find("div", class_="M8OgIe")
+    for class_ in local_class:
+        local_body = content.find("div", class_=class_)
+        if local_body is not None:
+            break
+
     return organic_body, local_body
 
 
