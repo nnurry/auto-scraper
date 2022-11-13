@@ -153,6 +153,7 @@ class Supabase:
 
 def init_selenium(url=URL, quit=True, page=1, destination=""):
     driver = Selenium()
+    driver.get_page(url, page)
     # driver.save_screenshot_to_s3()
     try:
         driver.click_related_question()
