@@ -56,14 +56,10 @@ class Selenium:
         tries = 1
 
         def mass_click():
-            try:
-                elements = self.driver.find_elements(By.XPATH, xpath)
-            except:
-                print('No related question found')
-            else:
-                for element in elements:
-                    element.click()
-                    time.sleep(0.25)
+            elements = self.driver.find_elements(By.XPATH, xpath)
+            for element in elements:
+                element.click()
+                time.sleep(0.25)
 
         for i in range(0, tries):
             mass_click()
@@ -157,9 +153,14 @@ class Supabase:
 
 def init_selenium(url=URL, quit=True, page=1, destination=""):
     driver = Selenium()
-    driver.get_page(url, page)
     # driver.save_screenshot_to_s3()
-    driver.click_related_question()
+    try:
+        driver.click_related_question()
+    except:
+        print('No related question found')
+        driver.quit()
+        driver = Selenium()
+        driver.get_page(url, page)
     driver.download_page(destination)
     if quit:
         driver.quit()
