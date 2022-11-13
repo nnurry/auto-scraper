@@ -58,11 +58,12 @@ class Selenium:
         def mass_click():
             try:
                 elements = self.driver.find_elements(By.XPATH, xpath)
+            except:
+                print('No related question found')
+            else:
                 for element in elements:
                     element.click()
                     time.sleep(0.25)
-            except:
-                print('No related question found')
 
         for i in range(0, tries):
             mass_click()
