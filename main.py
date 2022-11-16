@@ -23,6 +23,66 @@ NUM_OF_PAGES = 3
 
 def step_1(**kwargs):
     """Extract organic urls, local data and related questions into .json files"""
+
+    def process(index):
+        filepath = f"./html/page-{index + 1}.html"
+        params = dict(file=filepath, mode="r", encoding="utf-8")
+        if run_selenium:
+            init_selenium(url, page=index + 1, destination=filepath)
+
+        soup = read_and_make_soup(params)
+        # execute
+        content_div = extract_content(soup)
+        if not content_div:
+            raise Exception("Invalid HTML")
+
+        organic_body, local_body = extract_segment(content_div)
+        organic_results, related_results = extract_organic(organic_body)
+        local_results = {}
+        local_ads = []
+
+        if local_body:
+            local_dicts = extract_local(local_body)
+            local_results = {
+                "more_location_link": local_dicts["more_location_link"],
+                "places": [],
+            }
+
+            local_result_schema = [
+                "rating",
+                "rating_count",
+                "badge",
+                "service_area",
+                "hours",
+                "years_in_business",
+                "phone",
+            ]
+
+            for local_dict in local_dicts["places"]:
+
+                local_result = {
+                    "title": local_dict["title"],
+                    "place_id": local_dict["place_id"],
+                }
+
+                local_ad = {key: local_dict[key] for key in local_result_schema}
+
+                if local_dict.get(
+                    "website"
+                ):  # empty string or non-existent at all -> False -> dont't add website
+                    local_result["website"] = local_dict["website"]
+                    local_ad["link"] = local_dict["website"]
+
+                local_results["places"].append(local_result)
+                local_ads.append(local_ad)
+        
+        return {
+            'organic_results': organic_results,
+            'local_results': local_results,
+            'local_ads': local_ads,
+            'related_results': related_results
+        }
+
     # init
     url = kwargs.get("url")
     run_selenium = kwargs.get("run_selenium")
@@ -30,54 +90,30 @@ def step_1(**kwargs):
         raise Exception("Missing argument")
     make_dir("./data")
     make_dir("./html")
-    params = dict(file="./html/page-1.html", mode="r", encoding="utf-8")
-    if run_selenium:
-        init_selenium(url, destination=params["file"])
-    soup = read_and_make_soup(params)
-    # execute
-    content_div = extract_content(soup)
-    if not content_div:
-        raise Exception("Invalid HTML")
 
-    organic_body, local_body = extract_segment(content_div)
-    organic_results, related_results = extract_organic(organic_body)
+    organic_results = []
     local_results = {}
     local_ads = []
+    related_results = []
 
-    if local_body:
-        local_dicts = extract_local(local_body)
-        local_results = {
-            "more_location_link": local_dicts["more_location_link"],
-            "places": [],
-        }
+    for index in range(0, NUM_OF_PAGES):
+        # init
+        data = process(index)
+        if len(organic_results) > 0:
+            for result in data['organic_results']:
+                result['position'] += organic_results[-1]['position']
+        organic_results.extend(data['organic_results'])
 
-        local_result_schema = [
-            "rating",
-            "rating_count",
-            "badge",
-            "service_area",
-            "hours",
-            "years_in_business",
-            "phone",
-        ]
+        if not local_results.get('more_location_link'):
+            local_results = data['local_results']
+        else:
+            if data['local_results'].get('places'):
+                local_results['places'].extend(data['local_results']['places'])
 
-        for local_dict in local_dicts["places"]:
+        local_ads.extend(data['local_ads'])
 
-            local_result = {
-                "title": local_dict["title"],
-                "place_id": local_dict["place_id"],
-            }
-
-            local_ad = {key: local_dict[key] for key in local_result_schema}
-
-            if local_dict.get(
-                "website"
-            ):  # empty string or non-existent at all -> False -> dont't add website
-                local_result["website"] = local_dict["website"]
-                local_ad["link"] = local_dict["website"]
-
-            local_results["places"].append(local_result)
-            local_ads.append(local_ad)
+        related_results.extend(data['related_results'])
+        
 
     write_file(dumps(organic_results), "./data/organic_links.json", "w")
     write_file(dumps(local_results), "./data/local_results.json", "w")
